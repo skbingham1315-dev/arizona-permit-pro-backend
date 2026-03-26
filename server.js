@@ -17,7 +17,17 @@ app.use('/api/billing/webhook', express.raw({ type: 'application/json' }), (req,
 app.use(express.json());
 app.use(helmet());
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+  origin: (origin, cb) => {
+    const allowed = [
+      process.env.FRONTEND_URL,
+      'http://localhost:3000',
+    ].filter(Boolean);
+    // Allow any vercel.app subdomain or configured origin
+    if (!origin || allowed.includes(origin) || /\.vercel\.app$/.test(origin)) {
+      return cb(null, true);
+    }
+    cb(new Error('Not allowed by CORS'));
+  },
   credentials: true,
 }));
 
