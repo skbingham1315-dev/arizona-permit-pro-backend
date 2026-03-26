@@ -55,6 +55,45 @@ async function initSchema() {
     CREATE INDEX IF NOT EXISTS idx_permits_issued_date ON permits(issued_date);
     CREATE INDEX IF NOT EXISTS idx_permits_value ON permits(project_value);
     CREATE INDEX IF NOT EXISTS idx_permits_city ON permits(city);
+
+    CREATE TABLE IF NOT EXISTS jobs (
+      id SERIAL PRIMARY KEY,
+      user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+      title VARCHAR(255) NOT NULL,
+      description TEXT,
+      trade_type VARCHAR(100) NOT NULL,
+      city VARCHAR(100),
+      county VARCHAR(100),
+      budget_min DECIMAL(12,2),
+      budget_max DECIMAL(12,2),
+      timeline VARCHAR(100),
+      permit_id INTEGER REFERENCES permits(id) ON DELETE SET NULL,
+      company_name VARCHAR(255),
+      contact_name VARCHAR(255),
+      contact_phone VARCHAR(20),
+      contact_email VARCHAR(255),
+      status VARCHAR(50) DEFAULT 'active',
+      applications_count INTEGER DEFAULT 0,
+      created_at TIMESTAMP DEFAULT NOW(),
+      expires_at TIMESTAMP DEFAULT NOW() + INTERVAL '30 days'
+    );
+
+    CREATE TABLE IF NOT EXISTS job_applications (
+      id SERIAL PRIMARY KEY,
+      job_id INTEGER REFERENCES jobs(id) ON DELETE CASCADE,
+      user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+      message TEXT,
+      contact_name VARCHAR(255),
+      contact_phone VARCHAR(20),
+      contact_email VARCHAR(255),
+      status VARCHAR(50) DEFAULT 'pending',
+      created_at TIMESTAMP DEFAULT NOW(),
+      UNIQUE(job_id, user_id)
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_jobs_trade ON jobs(trade_type);
+    CREATE INDEX IF NOT EXISTS idx_jobs_city ON jobs(city);
+    CREATE INDEX IF NOT EXISTS idx_jobs_status ON jobs(status);
   `);
   console.log('Database schema initialized');
 }

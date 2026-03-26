@@ -47,6 +47,8 @@ app.use('/api/auth/', rateLimit({
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/permits', require('./routes/permits'));
 app.use('/api/billing', require('./routes/billing'));
+app.use('/api/jobs', require('./routes/jobs'));
+app.use('/api/ai', require('./routes/ai'));
 
 app.get('/api/health', (req, res) => res.json({ status: 'ok', timestamp: new Date() }));
 
