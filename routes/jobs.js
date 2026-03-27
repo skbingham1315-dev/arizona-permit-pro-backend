@@ -127,6 +127,40 @@ router.get('/mine/posted', requireAuth, async (req, res) => {
   }
 });
 
+// PATCH update a job (owner only)
+router.patch('/:id', requireAuth, async (req, res) => {
+  const { title, description, trade_type, address, city, zip, county,
+          budget_min, budget_max, timeline, contact_name, contact_phone,
+          contact_email, company_name, latitude, longitude } = req.body;
+  try {
+    const { rows } = await pool.query('SELECT user_id FROM jobs WHERE id = $1', [req.params.id]);
+    if (!rows.length) return res.status(404).json({ error: 'Job not found' });
+    if (rows[0].user_id !== req.user.id) return res.status(403).json({ error: 'Not authorized' });
+
+    const { rows: updated } = await pool.query(`
+      UPDATE jobs SET
+        title = COALESCE($1, title),
+        description = COALESCE($2, description),
+        trade_type = COALESCE($3, trade_type),
+        address = $4, city = $5, zip = $6, county = $7,
+        budget_min = $8, budget_max = $9,
+        timeline = $10, contact_name = $11, contact_phone = $12,
+        contact_email = $13, company_name = COALESCE($14, company_name),
+        latitude = $15, longitude = $16
+      WHERE id = $17
+      RETURNING *
+    `, [title, description, trade_type, address||null, city||null, zip||null, county||null,
+        budget_min||null, budget_max||null, timeline||null, contact_name||null,
+        contact_phone||null, contact_email||null, company_name,
+        latitude||null, longitude||null, req.params.id]);
+
+    res.json(updated[0]);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to update job' });
+  }
+});
+
 // DELETE close a job
 router.delete('/:id', requireAuth, async (req, res) => {
   try {
