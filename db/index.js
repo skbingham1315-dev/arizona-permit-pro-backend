@@ -94,6 +94,11 @@ async function initSchema() {
     CREATE INDEX IF NOT EXISTS idx_jobs_trade ON jobs(trade_type);
     CREATE INDEX IF NOT EXISTS idx_jobs_city ON jobs(city);
     CREATE INDEX IF NOT EXISTS idx_jobs_status ON jobs(status);
+
+    ALTER TABLE jobs ADD COLUMN IF NOT EXISTS address VARCHAR(255);
+    ALTER TABLE jobs ADD COLUMN IF NOT EXISTS zip VARCHAR(10);
+    ALTER TABLE jobs ADD COLUMN IF NOT EXISTS latitude DECIMAL(10,8);
+    ALTER TABLE jobs ADD COLUMN IF NOT EXISTS longitude DECIMAL(11,8);
   `);
   console.log('Database schema initialized');
 }

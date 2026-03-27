@@ -50,7 +50,8 @@ router.get('/', requireAuth, async (req, res) => {
 
 // POST create job (any paid plan or free - free gets 1 post)
 router.post('/', requireAuth, async (req, res) => {
-  const { title, description, trade_type, city, county, budget_min, budget_max, timeline, permit_id, contact_name, contact_phone, contact_email } = req.body;
+  const { title, description, trade_type, address, city, zip, county, budget_min, budget_max,
+          timeline, permit_id, contact_name, contact_phone, contact_email, latitude, longitude } = req.body;
   if (!title || !trade_type) return res.status(400).json({ error: 'Title and trade type required' });
 
   try {
@@ -64,12 +65,15 @@ router.post('/', requireAuth, async (req, res) => {
 
     const company = req.user.company_name || req.body.company_name;
     const { rows } = await pool.query(`
-      INSERT INTO jobs (user_id, title, description, trade_type, city, county, budget_min, budget_max,
-        timeline, permit_id, company_name, contact_name, contact_phone, contact_email)
-      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
+      INSERT INTO jobs (user_id, title, description, trade_type, address, city, zip, county,
+        budget_min, budget_max, timeline, permit_id, company_name, contact_name, contact_phone,
+        contact_email, latitude, longitude)
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18)
       RETURNING *
-    `, [req.user.id, title, description, trade_type, city, county, budget_min||null, budget_max||null,
-        timeline||null, permit_id||null, company, contact_name||null, contact_phone||null, contact_email||null]);
+    `, [req.user.id, title, description, trade_type, address||null, city||null, zip||null, county||null,
+        budget_min||null, budget_max||null, timeline||null, permit_id||null, company,
+        contact_name||null, contact_phone||null, contact_email||null,
+        latitude||null, longitude||null]);
 
     res.status(201).json(rows[0]);
   } catch (err) {
